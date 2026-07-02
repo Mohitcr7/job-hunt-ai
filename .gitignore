@@ -1,0 +1,29 @@
+# Create the .gitignore file
+cat > .gitignore << 'EOF'
+# Virtual environment — thousands of files, never push this
+venv/
+
+# Secret keys — NEVER push this
+.env
+
+# Python cache files — auto-generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+
+# FAISS index files — large binary files, regenerated at runtime
+data/*.faiss
+data/*_jobs.json
+
+# Your actual resume PDF — keep it private
+data/resume.pdf
+data/parsed_resume.json
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# IDE folders
+.vscode/
+.idea/
+EOF
