@@ -1,0 +1,12 @@
+services:
+  jobhunt:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # persist your resume, tracker DB, and generated application kits
+      - ./data:/app/data
+      - ./output:/app/output
+    restart: unless-stopped

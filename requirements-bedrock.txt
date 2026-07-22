@@ -1,0 +1,9 @@
+# Job Hunt AI — AWS Bedrock / AgentCore deployment extras
+# Install these ON TOP OF requirements.txt when deploying to Bedrock AgentCore:
+#   pip install -r requirements.txt -r requirements-bedrock.txt
+#
+# They are intentionally kept separate so the local (Gemini) path stays light.
+
+boto3>=1.34                 # AWS SDK — Bedrock, guardrails, KB retrieval
+langchain-aws>=0.2          # ChatBedrockConverse provider for the agents
+bedrock-agentcore>=0.1      # AgentCore Runtime wrapper (BedrockAgentCoreApp)

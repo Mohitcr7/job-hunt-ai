@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Hunt AI — Your Agentic Job Search Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-mark">🎯</div>
+        <div>
+          <div class="logo-text">Job Hunt <span>AI</span></div>
+          <div class="logo-sub">agentic job search</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon" data-icon="grid"></span> Dashboard
+        </button>
+        <button class="nav-item" data-tab="search">
+          <span class="nav-icon" data-icon="search"></span> Search Job
+        </button>
+        <button class="nav-item" data-tab="applications">
+          <span class="nav-icon" data-icon="layers"></span> Applications
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="pipeline-pill" id="pipeline-pill">
+          <span class="dot idle" id="pipeline-dot"></span>
+          <span id="pipeline-pill-text">Pipeline idle</span>
+        </div>
+        <a class="gh-link" href="https://github.com" target="_blank" rel="noopener">★ Star on GitHub</a>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <section class="tab active" id="tab-dashboard">
+        <header class="page-header">
+          <h1>Dashboard</h1>
+          <p>Your job hunt at a glance</p>
+        </header>
+
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Jobs tracked</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-prepared">—</div><div class="stat-label">Kits prepared</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-applied">—</div><div class="stat-label">Applied</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-interviewing">—</div><div class="stat-label">Interviewing</div></div>
+          <div class="stat-card highlight"><div class="stat-value" id="stat-offers">—</div><div class="stat-label">Offers 🎉</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-avg">—</div><div class="stat-label">Avg match score</div></div>
+        </div>
+
+        <div class="panel">
+          <h2>Application funnel</h2>
+          <div class="funnel" id="funnel"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Recent applications</h2>
+          <div id="recent-apps" class="app-list"></div>
+        </div>
+      </section>
+
+      <!-- ---------- SEARCH JOB SCREEN (resume + search, split panes) ---------- -->
+      <section class="tab" id="tab-search">
+        <header class="page-header">
+          <h1>Search Job</h1>
+          <p>Your resume on the left, the agents on the right. Drag the divider to resize.</p>
+        </header>
+
+        <div class="split" id="split">
+          <!-- ===== LEFT PANE · RESUME ===== -->
+          <div class="split-pane" id="pane-resume">
+            <div class="section">
+              <div class="section-head">
+                <div class="section-icon" data-icon="file"></div>
+                <div class="section-head-text">
+                  <h2>Resume</h2>
+                  <p>The profile every match is built from</p>
+                </div>
+              </div>
+              <div class="section-body">
+                <div class="dropzone" id="dropzone">
+                  <input type="file" id="resume-file" accept=".pdf" hidden />
+                  <div class="dz-icon" data-icon="upload"></div>
+                  <div class="dz-main">
+                    <div class="dz-title">Drop your resume here</div>
+                    <div class="dz-sub">PDF · or <span class="dz-link" id="dz-browse">browse files</span></div>
+                  </div>
+                  <div class="dz-file hidden" id="dz-file"></div>
+                </div>
+                <div class="upload-actions">
+                  <button class="btn-primary btn-sm" id="btn-upload">Upload &amp; parse</button>
+                  <span class="upload-status" id="upload-status"></span>
+                </div>
+                <div id="resume-view"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== DRAG HANDLE ===== -->
+          <div class="split-resizer" id="split-resizer" role="separator" aria-orientation="vertical" title="Drag to resize">
+            <span class="split-grip"></span>
+          </div>
+
+          <!-- ===== RIGHT PANE · SEARCH + AGENTS ===== -->
+          <div class="split-pane" id="pane-search">
+            <!-- ===== SEARCH PARAMETERS ===== -->
+            <div class="section">
+              <div class="section-head">
+                <div class="section-icon" data-icon="sliders"></div>
+                <div class="section-head-text">
+                  <h2>Search parameters</h2>
+                  <p>Tune your targets, then launch the agents</p>
+                </div>
+              </div>
+              <div class="section-body">
+                <div class="control-grid">
+                  <label class="ctl">
+                    <span class="ctl-label"><span data-icon="briefcase"></span> Target roles</span>
+                    <input id="input-roles" type="text" placeholder="Data Scientist, ML Engineer" autocomplete="off" />
+                    <span class="ctl-hint">comma separated</span>
+                  </label>
+                  <label class="ctl">
+                    <span class="ctl-label"><span data-icon="pin"></span> Locations</span>
+                    <input id="input-locations" type="text" placeholder="Remote, Bangalore" autocomplete="off" />
+                    <span class="ctl-hint">comma separated</span>
+                  </label>
+                  <label class="ctl">
+                    <span class="ctl-label"><span data-icon="clock"></span> Job freshness</span>
+                    <select id="input-hours" class="ctl-select">
+                      <option value="24">Last 24 hours</option>
+                      <option value="48">Last 48 hours</option>
+                      <option value="72">Last 3 days</option>
+                      <option value="168">Last week</option>
+                    </select>
+                  </label>
+                  <label class="ctl ctl-slider">
+                    <span class="ctl-label"><span data-icon="target"></span> Match threshold <b id="threshold-val">70%</b></span>
+                    <input id="input-threshold" type="range" min="0" max="100" step="5" value="70" class="slider" />
+                    <div class="slider-scale"><span>0</span><span>50</span><span>100</span></div>
+                  </label>
+                </div>
+
+                <button class="btn-launch" id="btn-run">
+                  <span class="btn-launch-content"><span data-icon="zap"></span> Launch agents</span>
+                  <span class="btn-launch-spinner" data-icon="spinner"></span>
+                </button>
+                <div class="run-status" id="run-status"></div>
+
+                <!-- live search stream -->
+                <div class="search-stream hidden" id="search-stream">
+                  <div class="stream-label">Live search</div>
+                  <div class="stream-sources" id="stream-sources"></div>
+                  <div class="stream-ticker" id="stream-ticker"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== AGENT STATUS ===== -->
+            <div class="section">
+              <div class="section-head">
+                <div class="section-icon" data-icon="cpu"></div>
+                <div class="section-head-text">
+                  <h2>Agent status</h2>
+                  <p>Watch the agents work in real time</p>
+                </div>
+                <div class="run-stats" id="run-stats"></div>
+              </div>
+              <div class="section-body">
+                <!-- empty state -->
+                <div class="empty-state" id="agent-empty">
+                  <div class="empty-icon" data-icon="cpu"></div>
+                  <div class="empty-title">No active run</div>
+                  <div class="empty-sub">Configure your search above and launch the agents.</div>
+                </div>
+
+                <!-- live agent panel -->
+                <div class="agent-panel hidden" id="agent-panel">
+                  <div class="overall">
+                    <div class="overall-head">
+                      <span id="op-label">Starting…</span>
+                      <span id="op-pct">0%</span>
+                    </div>
+                    <div class="overall-track"><div class="overall-bar" id="op-bar"></div></div>
+                  </div>
+                  <div class="agent-timeline" id="agent-timeline"></div>
+                </div>
+
+                <!-- results -->
+                <div class="results hidden" id="run-results-panel">
+                  <h3 id="run-results-title">Results</h3>
+                  <div class="run-summary" id="run-summary"></div>
+                  <div id="top-matches" class="match-list"></div>
+                </div>
+
+                <!-- raw logs -->
+                <details class="log-details hidden" id="log-details">
+                  <summary><span data-icon="terminal"></span> Raw agent logs</summary>
+                  <pre class="run-log" id="run-log"></pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- APPLICATIONS ---------- -->
+      <section class="tab" id="tab-applications">
+        <header class="page-header">
+          <h1>Applications</h1>
+          <p>Every kit the agents prepared. Review the materials, apply, and update the status.</p>
+        </header>
+
+        <div class="filter-row" id="status-filters"></div>
+        <div id="applications-list" class="app-cards"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Kit detail modal -->
+  <div class="modal-backdrop hidden" id="modal">
+    <div class="modal">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="app.js?v=2"></script>
+</body>
+</html>

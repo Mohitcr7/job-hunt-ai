@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  syntax:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile all Python files
+        run: python -m compileall -q agents graph tools review api config.py main.py job_hunt_agent.py provision_bedrock.py
+
+  tests:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # Full requirements pull in PyTorch (~2GB) — the smoke tests only
+      # need the lightweight subset, so install just that to keep CI fast.
+      - name: Install test dependencies
+        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core
+      - name: Run smoke tests
+        run: python -m pytest tests/ -q
