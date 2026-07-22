@@ -25,9 +25,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      # Full requirements pull in PyTorch (~2GB) — the smoke tests only
-      # need the lightweight subset, so install just that to keep CI fast.
+      # Full requirements pull in PyTorch via sentence-transformers (~2GB) —
+      # the smoke tests never call the embedding model, so numpy/faiss-cpu
+      # (lightweight, no torch) are enough to satisfy vector_store_tool's
+      # module-level imports.
       - name: Install test dependencies
-        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core
+        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core numpy faiss-cpu
       - name: Run smoke tests
         run: python -m pytest tests/ -q

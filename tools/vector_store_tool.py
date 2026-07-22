@@ -21,11 +21,13 @@ import json
 import numpy as np
 import faiss
 from pathlib import Path
-from typing import List, Tuple
-from sentence_transformers import SentenceTransformer
+from typing import List, Tuple, TYPE_CHECKING
 from dataclasses import dataclass
 
 from config import MATCH_THRESHOLD
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 
 # ---------------------------------------------------------------------------
@@ -71,7 +73,7 @@ class JobMatch:
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 _embedding_model = None     # module-level cache — load once, reuse everywhere
 
-def get_embedding_model() -> SentenceTransformer:
+def get_embedding_model() -> "SentenceTransformer":
     """
     Loads the embedding model once and caches it.
     The underscore prefix on _embedding_model is a Python convention
@@ -79,6 +81,11 @@ def get_embedding_model() -> SentenceTransformer:
     """
     global _embedding_model
     if _embedding_model is None:
+        # Imported lazily — sentence-transformers pulls in torch (~2GB), which
+        # only actual embedding calls need. Callers that just use Job/JobMatch
+        # or the FAISS index (e.g. the test suite) never pay for it.
+        from sentence_transformers import SentenceTransformer
+
         print(f"Loading embedding model: {EMBEDDING_MODEL_NAME}")
         print("(First run downloads ~90MB — subsequent runs are instant)")
         _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)

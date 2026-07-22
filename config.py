@@ -98,12 +98,13 @@ MATCH_THRESHOLD = int(os.getenv("MATCH_THRESHOLD", "70"))
 TARGET_PLATFORMS = ["linkedin", "indeed", "naukri", "company_pages"]
 
 # --- Your job search preferences ---
-# You'll update these to match what you're looking for
+# Example defaults — update these (or use the dashboard's Search Job screen)
+# to match what you're looking for.
 JOB_PREFERENCES = {
-    "roles": ["Data Scientist", "AI Engineer", "ML Engineer", "GenAI Engineer"],
-    "locations": ["Remote", "Bangalore", "Mumbai", "Pune", "Gurgaon", "Noida"],
-    "experience_years": 2,  # in years
-    "salary_min": 1200000,  # in INR per year
+    "roles": ["Software Engineer"],
+    "locations": ["Remote"],
+    "experience_years": 0,  # in years
+    "salary_min": 0,  # in INR per year
 }
 
 # --- LLM factory functions ---
