@@ -4,14 +4,9 @@
 
 Job hunting is a numbers game where the slow part isn't clicking "Apply" — it's *finding* fresh relevant postings every day, figuring out which ones actually fit you, and tailoring your resume + cover letter for each one. Job Hunt AI automates exactly that slow part with a team of AI agents, and leaves the final click to you.
 
-```
- ┌─────────┐    ┌──────────┐    ┌─────────┐    ┌─────────┐    ┌──────────┐
- │  SCOUT   │───►│ MATCHER  │───►│ TAILOR  │───►│ REVIEW  │───►│ APPLIER  │
- │ scrapes  │    │ FAISS +  │    │ resume  │    │ critic  │    │ saves kit │
- │ jobs     │    │ LLM fit  │    │ + cover │    │ + editor│    │ + tracks  │
- │          │    │ scoring  │    │ letter  │    │ polish  │    │ + notifies│
- └─────────┘    └──────────┘    └─────────┘    └─────────┘    └──────────┘
-```
+<p align="center">
+  <img src="docs/architecture.svg" alt="Job Hunt AI — agentic pipeline architecture and data flow: CLI/dashboard → LangGraph orchestrator → scout → matcher → tailor → review → applier, with a shared LLM provider layer and storage/delivery layer" width="100%">
+</p>
 
 Built with **LangGraph**, **LangChain**, **FAISS**, **Scrapling**, and **FastAPI** — with a clean web dashboard to run the pipeline and track every application from *prepared* → *applied* → *interviewing* → *offer*.
 
