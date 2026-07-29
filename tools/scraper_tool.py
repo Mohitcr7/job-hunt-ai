@@ -20,11 +20,18 @@
 # Scrapling's DynamicFetcher is synchronous, so this whole file is now plain
 # sequential code — no asyncio.
 #
+# DESCRIPTIONS FOR (3): a career-page card carries a title and a link, nothing
+# more. Since the description is what gets embedded, reranked and fit-scored,
+# those jobs used to be judged on a six-word placeholder. We now fetch each
+# posting's own page and use its text, behind a gate that rejects anything that
+# isn't recognisably that job's description.
+#
 # POLITE BY DESIGN: every source keeps randomised rate-limit delays. We do not
 # use Scrapling's anti-bot/stealth fetcher — this tool stays within reasonable,
 # respectful scraping.
 
 import os
+import re
 import time
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -39,6 +46,24 @@ from tools.vector_store_tool import Job
 # How many (role × city) searches run at once. Higher = faster, but more likely
 # to trip LinkedIn/Indeed rate limits. 4 is a safe-ish balance; tune via .env.
 SCRAPE_CONCURRENCY = int(os.getenv("SCRAPE_CONCURRENCY", "4"))
+
+# --- Description enrichment (company career pages only) ---------------------
+# Company-page cards give us a title and a link but no description text. Rather
+# than embed a placeholder string (which makes every company-page job score
+# badly for reasons unrelated to fit), we fetch the posting itself through
+# Jina Reader — a free, no-API-key service that returns a page as plain text.
+ENABLE_PAGE_ENRICHMENT = os.getenv("ENABLE_PAGE_ENRICHMENT", "true").lower() in ("1", "true", "yes")
+JINA_READER_URL = os.getenv("JINA_READER_URL", "https://r.jina.ai")
+ENRICH_TIMEOUT = float(os.getenv("ENRICH_TIMEOUT", "25"))       # seconds per page
+ENRICH_CONCURRENCY = int(os.getenv("ENRICH_CONCURRENCY", "3"))  # keep low; free tier
+ENRICH_MAX_PAGES = int(os.getenv("ENRICH_MAX_PAGES", "40"))     # ceiling per run
+ENRICH_MAX_CHARS = int(os.getenv("ENRICH_MAX_CHARS", "6000"))   # trim before embedding
+
+# A posting whose extracted text has less than this many characters sitting in
+# long lines is almost certainly not a description. Career sites that render the
+# description behind a JS tab (Google, Microsoft) return only nav chrome, which
+# measures ~350-500 by this metric; a real posting measures in the thousands.
+ENRICH_MIN_PROSE_CHARS = int(os.getenv("ENRICH_MIN_PROSE_CHARS", "1000"))
 
 
 # ---------------------------------------------------------------------------
@@ -61,6 +86,61 @@ def _abs_url(href: str, base: str) -> str:
         p = urlparse(base)
         return f"{p.scheme}://{p.netloc}{href}"
     return href or ""
+
+
+def _pretty_job_type(value) -> str:
+    """
+    jobspy reports employment type as a slug, sometimes several comma-joined
+    ('fulltime', 'contract,temporary'). Render the first one for the sheet.
+    """
+    raw = _clean(value)
+    if not raw:
+        return ""
+    first = raw.split(",")[0].strip().lower().replace(" ", "").replace("_", "")
+    return {
+        "fulltime": "Full-time",
+        "parttime": "Part-time",
+        "contract": "Contract",
+        "temporary": "Temporary",
+        "internship": "Internship",
+        "volunteer": "Volunteer",
+        "perdiem": "Per diem",
+        "other": "Other",
+    }.get(first, raw.split(",")[0].strip().title())
+
+
+def _pretty_experience(value) -> str:
+    """
+    LinkedIn reports seniority as a lowercase slug ('mid-senior level'). Title-case
+    it, and treat its 'not applicable' as the absence of data that it is.
+    """
+    raw = _clean(value)
+    if not raw or raw.lower() in ("not applicable", "n/a", "none"):
+        return ""
+    return raw[0].upper() + raw[1:]
+
+
+def _salary_range(minimum, maximum, currency, interval) -> str:
+    """
+    Build a readable pay range from jobspy's separate min/max columns.
+
+    Most Indian listings disclose nothing, in which case every part of this is
+    NaN and we return "" — the sheet shows a dash rather than the string 'nan'.
+    """
+    low, high = _clean(minimum), _clean(maximum)
+    if not low and not high:
+        return ""
+
+    def fmt(v):
+        try:
+            return f"{float(v):,.0f}"
+        except (TypeError, ValueError):
+            return v
+
+    symbol = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£"}.get(_clean(currency).upper(), "")
+    amount = f"{symbol}{fmt(low)}–{symbol}{fmt(high)}" if low and high else f"{symbol}{fmt(low or high)}"
+    period = _clean(interval)
+    return f"{amount}/{period}" if period else amount
 
 
 def _first_text(element, selectors: List[str]) -> str:
@@ -126,6 +206,140 @@ def _find_cards(page, selectors: List[str]):
 
 
 # ---------------------------------------------------------------------------
+# Description enrichment helpers
+# ---------------------------------------------------------------------------
+
+def _prose_chars(text: str) -> int:
+    """
+    How much of `text` reads like prose rather than navigation.
+
+    Menus, filter widgets and job-card grids are made of many short lines;
+    an actual job description is made of long paragraphs. Summing only the
+    lines over 80 characters separates the two cleanly.
+    """
+    return sum(len(line) for line in text.splitlines() if len(line.strip()) > 80)
+
+
+# A results page announces its size ("1741 jobs", "411 jobs") on a line of its
+# own. A single posting never does. This is the cheapest reliable way to notice
+# that a job link redirected us back to the board it came from.
+_LISTING_MARKER = re.compile(r"^\s*[\d,]+\s+jobs?\s*$", re.IGNORECASE | re.MULTILINE)
+
+
+def _looks_like_description(text: str, title: str) -> bool:
+    """
+    Decide whether fetched page text is really this job's description.
+
+    Substituting the wrong page is worse than keeping the placeholder: a
+    placeholder scores predictably low, whereas a board's worth of unrelated
+    postings looks like signal and quietly corrupts the match. So all three
+    checks must pass.
+    """
+    if _prose_chars(text) < ENRICH_MIN_PROSE_CHARS:
+        return False    # description is probably rendered client-side
+
+    if _LISTING_MARKER.search(text):
+        return False    # we landed on a search-results page, not a posting
+
+    # The card's title should appear in the page it links to. Compared on
+    # significant words only, so punctuation and seniority suffixes don't
+    # cause a false negative.
+    words = [w for w in re.findall(r"[a-z]+", title.lower()) if len(w) > 3]
+    if words:
+        haystack = text.lower()
+        hits = sum(1 for w in words if w in haystack)
+        if hits / len(words) < 0.6:
+            return False
+
+    return True
+
+
+class _RateLimited(Exception):
+    """Raised internally to abort enrichment once the reader starts refusing us."""
+
+
+def _fetch_page_text(url: str, title: str = "") -> str:
+    """
+    Fetch a public job posting as plain text via Jina Reader.
+
+    Returns "" on any failure, on a rate-limit response, or when the extracted
+    text doesn't look like this job's description — callers keep whatever they
+    had. Enrichment is strictly best-effort.
+    """
+    # Imported here, not at module scope: the CI test job installs a deliberately
+    # slim dependency set, and a top-level `import requests` would break test
+    # collection for every module that transitively imports this one.
+    import requests
+
+    try:
+        response = requests.get(
+            f"{JINA_READER_URL}/{url}",
+            timeout=ENRICH_TIMEOUT,
+            headers={
+                # Plain text, not the default markdown — markdown responses on
+                # script-heavy career sites embed the page's inline JSON config,
+                # which ballooned one test fetch from 8 KB to 500 KB of noise.
+                "X-Return-Format": "text",
+                "Accept": "text/plain",
+            },
+        )
+    except Exception as e:
+        logger.debug(f"Enrichment fetch failed for {url}: {e}")
+        return ""
+
+    if response.status_code == 429:
+        logger.warning("Jina Reader rate-limited us — skipping the rest of this run's enrichment.")
+        raise _RateLimited()
+    if response.status_code != 200:
+        logger.debug(f"Enrichment got HTTP {response.status_code} for {url}")
+        return ""
+
+    text = response.text.strip()
+    if not _looks_like_description(text, title):
+        logger.debug(f"Enrichment result rejected (not a job description) for {url}")
+        return ""
+
+    return text[:ENRICH_MAX_CHARS]
+
+
+def _enrich_descriptions(jobs: List[Job]) -> int:
+    """
+    Replace placeholder descriptions with the real posting text, in place.
+
+    Bounded three ways so this stays a cheap add-on: at most ENRICH_MAX_PAGES
+    fetches per run, ENRICH_CONCURRENCY at a time, and the whole pass stops the
+    moment the reader rate-limits us. Returns how many jobs were enriched.
+    """
+    if not ENABLE_PAGE_ENRICHMENT or not jobs:
+        return 0
+
+    targets = [job for job in jobs if job.url][:ENRICH_MAX_PAGES]
+    if len(jobs) > len(targets):
+        logger.info(f"Enriching {len(targets)} of {len(jobs)} company-page jobs (capped by ENRICH_MAX_PAGES)")
+
+    enriched = 0
+    with ThreadPoolExecutor(max_workers=ENRICH_CONCURRENCY) as pool:
+        futures = {pool.submit(_fetch_page_text, job.url, job.title): job for job in targets}
+        for future in as_completed(futures):
+            job = futures[future]
+            try:
+                text = future.result()
+            except _RateLimited:
+                for pending in futures:
+                    pending.cancel()
+                break
+            except Exception as e:
+                logger.debug(f"Enrichment error for {job.url}: {e}")
+                continue
+            if text:
+                job.description = text
+                enriched += 1
+
+    logger.info(f"Enriched {enriched}/{len(targets)} company-page descriptions")
+    return enriched
+
+
+# ---------------------------------------------------------------------------
 # SECTION 1: jobspy-based scraping (LinkedIn + Indeed) — the reliable source
 # ---------------------------------------------------------------------------
 
@@ -177,8 +391,13 @@ def _jobspy_one_search(
             url=url,
             platform=_clean(row.get("site")) or "unknown",
             posted_date=_clean(row.get("date_posted")),
-            salary=_clean(row.get("min_amount")),
+            salary=_salary_range(row.get("min_amount"), row.get("max_amount"),
+                                 row.get("currency"), row.get("interval")),
             job_id=_clean(row.get("id")) or url,
+            # LinkedIn reports seniority ("Entry level", "Associate"); Indeed
+            # usually reports neither, which the sheet renders as a dash.
+            experience=_pretty_experience(row.get("job_level")),
+            job_type=_pretty_job_type(row.get("job_type")),
         ))
     return jobs
 
@@ -248,6 +467,7 @@ NAUKRI_COMPANY_SELECTORS = ["a.comp-name", "a.subTitle", "span.comp-name", "a[cl
 NAUKRI_LOCATION_SELECTORS = ["span.locWdth", "li.location span", "span[class*='loc']"]
 NAUKRI_SALARY_SELECTORS = ["span.sal-wrap span", "li.salary span", "span[class*='sal']"]
 NAUKRI_DESC_SELECTORS = ["span.job-desc", "div.job-description", "[class*='job-desc']"]
+NAUKRI_EXPERIENCE_SELECTORS = ["span.expwdth", "li.experience span", "span[class*='exp']"]
 
 
 def scrape_naukri(
@@ -326,6 +546,8 @@ def scrape_naukri(
                                 posted_date=datetime.now().strftime("%Y-%m-%d"),
                                 salary=_first_text(card, NAUKRI_SALARY_SELECTORS),
                                 job_id=href,
+                                experience=_first_text(card, NAUKRI_EXPERIENCE_SELECTORS),
+                                job_type="Full-time",   # Naukri's SRP is full-time by default
                             ))
 
                         time.sleep(random.uniform(2.0, 4.0))  # stay polite
@@ -413,6 +635,9 @@ def scrape_company_pages(
                                 title=title,
                                 company=config["company"],
                                 location=location,
+                                # Placeholder only — _enrich_descriptions below
+                                # replaces this with the real posting text
+                                # wherever the career site will give it to us.
                                 description=f"{title} position at {config['company']}",
                                 url=href,
                                 platform="company_page",
@@ -424,6 +649,12 @@ def scrape_company_pages(
 
     except Exception as e:
         logger.error(f"Company page scraping error: {e}")
+
+    # A card only gives us a title and a link. Left as-is, every company-page
+    # job would be embedded, reranked and fit-scored against six words of
+    # placeholder text — so these postings scored badly regardless of how well
+    # they actually matched. Fetch the real description before returning.
+    _enrich_descriptions(all_jobs)
 
     logger.info(f"Company pages total: {len(all_jobs)} jobs")
     return all_jobs
@@ -477,15 +708,25 @@ def scrape_all_jobs(
         all_jobs.extend(company_jobs)
         logger.info(f"Company pages contributed {len(company_jobs)} jobs")
 
-    # Final dedup by URL across all sources
-    seen = set()
+    # Dedup across all sources. URL alone isn't enough: the same opening gets a
+    # distinct URL per search that surfaced it, so one Accenture listing turned
+    # up 49 times in a 4-role × 6-city run. Collapsing on (title, company) too
+    # is what keeps a day's sheet skimmable.
+    seen_urls = set()
+    seen_roles = set()
     unique_jobs = []
     for job in all_jobs:
-        if job.url and job.url not in seen:
-            seen.add(job.url)
-            unique_jobs.append(job)
+        if not job.url or job.url in seen_urls:
+            continue
+        role_key = (job.title.strip().lower(), job.company.strip().lower())
+        if role_key in seen_roles and all(role_key):
+            continue
+        seen_urls.add(job.url)
+        seen_roles.add(role_key)
+        unique_jobs.append(job)
 
-    logger.info(f"\nTotal unique jobs collected: {len(unique_jobs)}")
+    duplicates = len(all_jobs) - len(unique_jobs)
+    logger.info(f"\nTotal unique jobs collected: {len(unique_jobs)} ({duplicates} duplicates dropped)")
     return unique_jobs
 
 
