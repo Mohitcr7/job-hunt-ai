@@ -37,3 +37,4 @@ sendgrid>=6.11
 python-dotenv>=1.0
 loguru>=0.7
 requests>=2.31              # OpenRouter /rerank calls
+openpyxl>=3.1                # writes the daily job spreadsheet

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd agent template — runs the daily job sheet at 12:00 local time.
+
+  Install (macOS):
+    sed -e "s|__PROJECT_DIR__|$PWD|g" -e "s|__HOME__|$HOME|g" \
+        scripts/com.jobhuntai.dailysheet.plist.template \
+        > ~/Library/LaunchAgents/com.jobhuntai.dailysheet.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jobhuntai.dailysheet.plist
+
+  Run it now without waiting for noon:
+    launchctl kickstart -p gui/$(id -u)/com.jobhuntai.dailysheet
+
+  Remove:
+    launchctl bootout gui/$(id -u)/com.jobhuntai.dailysheet
+    rm ~/Library/LaunchAgents/com.jobhuntai.dailysheet.plist
+
+  Chosen over cron because launchd runs a job it missed once the Mac wakes,
+  whereas cron silently skips any run scheduled while the machine was asleep.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jobhuntai.dailysheet</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__PROJECT_DIR__/scripts/daily_sheet.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__PROJECT_DIR__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>JOB_HUNT_PYTHON</key>
+        <string>__PYTHON_BIN__</string>
+        <key>SHEET_OUTPUT_DIR</key>
+        <string>__OUTPUT_DIR__</string>
+        <key>SHEET_HOURS</key>
+        <string>24</string>
+        <key>SHEET_LLM_TOP</key>
+        <string>0</string>
+        <key>SHEET_TITLE</key>
+        <string>AI/ML &amp; Data Science roles</string>
+    </dict>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>12</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Don't fire on login/reload; noon is noon. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>__PROJECT_DIR__/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>__PROJECT_DIR__/logs/launchd.err.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

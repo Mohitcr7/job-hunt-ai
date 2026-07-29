@@ -30,6 +30,6 @@ jobs:
       # (lightweight, no torch) are enough to satisfy vector_store_tool's
       # module-level imports.
       - name: Install test dependencies
-        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core numpy faiss-cpu
+        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core numpy faiss-cpu openpyxl
       - name: Run smoke tests
         run: python -m pytest tests/ -q

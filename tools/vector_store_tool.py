@@ -49,6 +49,8 @@ class Job:
     posted_date: str = ""
     salary: str = ""
     job_id: str = ""        # platform's own ID for deduplication
+    experience: str = ""    # "1-4 yrs" (Naukri) or "Entry level" (LinkedIn)
+    job_type: str = ""      # "Full-time", "Contract", "Internship", ...
 
 
 @dataclass

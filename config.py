@@ -98,13 +98,21 @@ MATCH_THRESHOLD = int(os.getenv("MATCH_THRESHOLD", "70"))
 TARGET_PLATFORMS = ["linkedin", "indeed", "naukri", "company_pages"]
 
 # --- Your job search preferences ---
-# Example defaults — update these (or use the dashboard's Search Job screen)
-# to match what you're looking for.
+# The defaults below are deliberately generic. Set JOB_ROLES / JOB_LOCATIONS in
+# .env (comma-separated) to make them yours — .env is gitignored, so your actual
+# search stays private even if you fork or publish this repo. The dashboard's
+# Search Job screen overrides both per-run.
+def _csv_env(name: str, fallback: list) -> list:
+    raw = os.getenv(name, "")
+    values = [item.strip() for item in raw.split(",") if item.strip()]
+    return values or fallback
+
+
 JOB_PREFERENCES = {
-    "roles": ["Software Engineer"],
-    "locations": ["Remote"],
-    "experience_years": 0,  # in years
-    "salary_min": 0,  # in INR per year
+    "roles": _csv_env("JOB_ROLES", ["Software Engineer"]),
+    "locations": _csv_env("JOB_LOCATIONS", ["Remote"]),
+    "experience_years": int(os.getenv("EXPERIENCE_YEARS", "0")),  # in years
+    "salary_min": int(os.getenv("SALARY_MIN", "0")),  # in INR per year
 }
 
 # --- LLM factory functions ---
