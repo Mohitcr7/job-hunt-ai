@@ -120,7 +120,15 @@ def test_enrichment_keeps_placeholder_when_fetch_fails(monkeypatch):
 
 
 def test_rate_limit_aborts_the_pass(monkeypatch):
-    """One 429 stops the whole pass rather than hammering a free service."""
+    """
+    One 429 stops the whole pass rather than hammering a free service.
+
+    The abort has to happen in the worker that sees the 429, not in the main
+    thread after it reads the result: every future is submitted up front, so by
+    then the pool has usually run them all and cancelling achieves nothing.
+    Single worker here so the ordering is deterministic — the first fetch gets
+    the 429 and every queued fetch after it must return without a request.
+    """
     import tools.scraper_tool as st
 
     monkeypatch.setattr(st, "ENABLE_PAGE_ENRICHMENT", True)
@@ -141,7 +149,34 @@ def test_rate_limit_aborts_the_pass(monkeypatch):
         for i in range(5)
     ]
     assert st._enrich_descriptions(jobs) == 0
-    assert len(calls) < len(jobs), "enrichment kept fetching after being rate-limited"
+    assert len(calls) == 1, f"kept fetching after being rate-limited: {len(calls)} requests"
+
+
+def test_rate_limit_does_not_discard_work_already_done(monkeypatch):
+    """A 429 partway through must keep the descriptions fetched before it."""
+    import tools.scraper_tool as st
+
+    monkeypatch.setattr(st, "ENABLE_PAGE_ENRICHMENT", True)
+    monkeypatch.setattr(st, "ENRICH_CONCURRENCY", 1)
+    responses = [
+        SimpleNamespace(status_code=200, text=REAL_POSTING),
+        SimpleNamespace(status_code=429, text=""),
+    ]
+
+    def get(url, **k):
+        return responses.pop(0) if responses else SimpleNamespace(status_code=200, text="")
+
+    monkeypatch.setitem(sys.modules, "requests", SimpleNamespace(get=get))
+
+    from tools.vector_store_tool import Job
+    jobs = [
+        Job(title="Account Executive, Public Sector", company="Acme", location="Sydney",
+            description="placeholder", url=f"https://example.test/jobs/{i}",
+            platform="company_page")
+        for i in range(4)
+    ]
+    assert st._enrich_descriptions(jobs) == 1
+    assert "Responsibilities" in jobs[0].description
 
 
 def test_disabled_by_flag(monkeypatch):

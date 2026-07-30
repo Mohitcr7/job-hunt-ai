@@ -32,6 +32,7 @@
 
 import os
 import re
+import threading
 import time
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -258,14 +259,21 @@ class _RateLimited(Exception):
     """Raised internally to abort enrichment once the reader starts refusing us."""
 
 
-def _fetch_page_text(url: str, title: str = "") -> str:
+def _fetch_page_text(url: str, title: str = "", stop: "threading.Event" = None) -> str:
     """
     Fetch a public job posting as plain text via Jina Reader.
 
     Returns "" on any failure, on a rate-limit response, or when the extracted
     text doesn't look like this job's description — callers keep whatever they
     had. Enrichment is strictly best-effort.
+
+    `stop` is set by whichever worker first sees a 429 and is checked here
+    before every request, so the remaining queued fetches return without
+    touching the network. Cancelling the futures from the main thread is not
+    enough: they have usually started by the time the first result is read.
     """
+    if stop is not None and stop.is_set():
+        return ""
     # Imported here, not at module scope: the CI test job installs a deliberately
     # slim dependency set, and a top-level `import requests` would break test
     # collection for every module that transitively imports this one.
@@ -288,7 +296,9 @@ def _fetch_page_text(url: str, title: str = "") -> str:
         return ""
 
     if response.status_code == 429:
-        logger.warning("Jina Reader rate-limited us — skipping the rest of this run's enrichment.")
+        if stop is not None and not stop.is_set():
+            stop.set()
+            logger.warning("Jina Reader rate-limited us — skipping the rest of this run's enrichment.")
         raise _RateLimited()
     if response.status_code != 200:
         logger.debug(f"Enrichment got HTTP {response.status_code} for {url}")
@@ -318,8 +328,12 @@ def _enrich_descriptions(jobs: List[Job]) -> int:
         logger.info(f"Enriching {len(targets)} of {len(jobs)} company-page jobs (capped by ENRICH_MAX_PAGES)")
 
     enriched = 0
+    stop = threading.Event()
     with ThreadPoolExecutor(max_workers=ENRICH_CONCURRENCY) as pool:
-        futures = {pool.submit(_fetch_page_text, job.url, job.title): job for job in targets}
+        futures = {
+            pool.submit(_fetch_page_text, job.url, job.title, stop): job
+            for job in targets
+        }
         for future in as_completed(futures):
             job = futures[future]
             try:
@@ -327,7 +341,7 @@ def _enrich_descriptions(jobs: List[Job]) -> int:
             except _RateLimited:
                 for pending in futures:
                     pending.cancel()
-                break
+                continue
             except Exception as e:
                 logger.debug(f"Enrichment error for {job.url}: {e}")
                 continue
