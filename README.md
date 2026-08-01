@@ -2,6 +2,8 @@
 
 **An open-source, agentic AI job-search copilot for students and early-career engineers.**
 
+▶️ **[Watch the live demo](https://www.linkedin.com/posts/mohit-chauhan-ab5396365_aiagents-opensource-langgraph-ugcPost-7486499407060713472-Ie_T)** — the pipeline running end to end, from scrape to tailored cover letter.
+
 Job hunting is a numbers game where the slow part isn't clicking "Apply" — it's *finding* fresh relevant postings every day, figuring out which ones actually fit you, and tailoring your resume + cover letter for each one. Job Hunt AI automates exactly that slow part with a team of AI agents, and leaves the final click to you.
 
 <p align="center">
@@ -61,6 +63,12 @@ python main.py run
 ## 📅 Daily job spreadsheet
 
 Scrape today's postings into a dated `.xlsx` — every role scraped, scored against your resume, sorted by fit then recency, with a clickable link per row.
+
+<p align="center">
+  <img src="docs/daily-sheet.png" alt="The generated spreadsheet: 986 AI/ML and Data Science roles scraped in the last 24 hours, one row each, with source, job title, company, location, posting date, experience level, salary, employment type, a Strong/Reachable/Stretch fit band, and a clickable apply link" width="100%">
+</p>
+
+<p align="center"><em>A real run — 986 roles from LinkedIn, Indeed and Naukri, deduplicated, ranked, and banded by fit.</em></p>
 
 ```bash
 python main.py sheet ~/Desktop          # → ~/Desktop/Jobs-2026-07-29.xlsx
