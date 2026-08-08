@@ -41,7 +41,23 @@ REACHABLE_BAND = int(os.getenv("SHEET_REACHABLE_BAND", "60"))
 FAISS_STRONG_BAND = int(os.getenv("SHEET_FAISS_STRONG_BAND", "55"))
 FAISS_REACHABLE_BAND = int(os.getenv("SHEET_FAISS_REACHABLE_BAND", "42"))
 
+# A scrape that returns nothing is treated as a failed run, not a quiet day.
+# Set this if you genuinely expect empty results (a very narrow search, say).
+ALLOW_EMPTY = os.getenv("SHEET_ALLOW_EMPTY", "false").lower() in ("1", "true", "yes")
+
 IST = timezone(timedelta(hours=5, minutes=30))
+
+
+class EmptyScrapeError(RuntimeError):
+    """
+    Every source returned zero jobs.
+
+    Raised instead of writing the sheet, because an empty result is far more
+    often a broken run than an empty job market — on 2026-08-08 the Mac lost
+    DNS at noon, every source failed, and the run cheerfully overwrote a good
+    spreadsheet with a header row and exited 0. Failing loudly keeps yesterday's
+    sheet intact and lets the wrapper script raise a desktop notification.
+    """
 
 COLUMNS = [
     ("#", 5),
@@ -137,7 +153,7 @@ def collect_jobs(
         hours_old=hours_old,
     )
     if not jobs:
-        logger.warning("Scrape returned no jobs — writing an empty sheet.")
+        logger.warning("Scrape returned no jobs from any source.")
         return []
 
     # min_score=0 and top_k=len(jobs): unlike the pipeline we want a score for
@@ -304,7 +320,12 @@ def build_daily_sheet(
     resume_path: Optional[str] = None,
     llm_top_n: int = 0,
 ) -> Path:
-    """Scrape, score and write today's sheet. Returns the file path."""
+    """
+    Scrape, score and write today's sheet. Returns the file path.
+
+    Raises EmptyScrapeError if nothing was scraped, leaving any existing sheet
+    for the day untouched — see that class for why an empty run is a failure.
+    """
     matches = collect_jobs(
         search_terms=search_terms,
         locations=locations,
@@ -312,6 +333,15 @@ def build_daily_sheet(
         resume_path=resume_path,
         llm_top_n=llm_top_n,
     )
+    if not matches and not ALLOW_EMPTY:
+        raise EmptyScrapeError(
+            "Every source returned zero jobs. That is almost always a network "
+            "outage or a broken scraper rather than an empty job market, so the "
+            "sheet was left as it was instead of being overwritten with an empty "
+            "one. Check logs/daily-sheet.log for the per-source errors, or set "
+            "SHEET_ALLOW_EMPTY=true if an empty result is genuinely expected."
+        )
+
     scored_by = "cross-encoder reranker" if ENABLE_SHEET_RERANK else "embedding similarity"
     if llm_top_n > 0:
         scored_by = f"LLM fit scoring (top {llm_top_n}) + {scored_by}"

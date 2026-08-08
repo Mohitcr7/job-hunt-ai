@@ -108,6 +108,10 @@ macOS only. `launchd` rather than `cron` because it runs a job it missed once th
 
 Set `JOB_ROLES` and `JOB_LOCATIONS` in `.env` (comma-separated) so your real search preferences stay out of the repo.
 
+**A scrape that returns nothing is treated as a failed run.** If every source comes back empty, the run exits non-zero and writes no file, leaving the existing sheet intact — an empty result is nearly always a network outage or a broken scraper, not an empty job market, and overwriting good data with a header row is the worse failure. Set `SHEET_ALLOW_EMPTY=true` if an empty result is genuinely expected.
+
+On macOS, keep the project **out of `~/Desktop`, `~/Documents` and `~/Downloads`.** Those folders are TCC-protected: a scheduled `launchd` job can't read them, so the agent dies with `Operation not permitted` before your script starts — and because the failure happens at exec, nothing in the script gets a chance to warn you. `~/job_hunt_ai` or `~/Projects/job_hunt_ai` work fine.
+
 ## 🗂️ Project structure
 
 ```

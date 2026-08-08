@@ -59,7 +59,7 @@ def make_sheet():
       python main.py sheet ~/Desktop --llm-top 15 # real LLM scores for the top 15
     """
     import os
-    from exports.daily_sheet import build_daily_sheet
+    from exports.daily_sheet import build_daily_sheet, EmptyScrapeError
 
     args = sys.argv[2:]
 
@@ -75,11 +75,18 @@ def make_sheet():
     hours_old = flag("--hours", 24)
     llm_top_n = flag("--llm-top", 0)
 
-    path = build_daily_sheet(
-        output_dir=output_dir,
-        hours_old=hours_old,
-        llm_top_n=llm_top_n,
-    )
+    try:
+        path = build_daily_sheet(
+            output_dir=output_dir,
+            hours_old=hours_old,
+            llm_top_n=llm_top_n,
+        )
+    except EmptyScrapeError as e:
+        # Exit non-zero so the scheduled wrapper logs a failure and notifies,
+        # instead of a silent green run that produced nothing.
+        print(f"\nNo sheet written: {e}")
+        sys.exit(1)
+
     print(f"\nSpreadsheet ready: {path}")
 
 

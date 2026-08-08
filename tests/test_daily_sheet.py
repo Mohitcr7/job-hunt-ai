@@ -7,6 +7,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
@@ -174,7 +176,7 @@ def test_filename_is_dated(tmp_path):
 
 
 def test_empty_scrape_still_writes_a_sheet(tmp_path):
-    """A quiet day must produce a readable empty sheet, not a crash at noon."""
+    """The writer itself stays total — an empty list is a readable sheet."""
     from openpyxl import load_workbook
     from exports.daily_sheet import write_sheet
 
@@ -182,6 +184,48 @@ def test_empty_scrape_still_writes_a_sheet(tmp_path):
     sheet = load_workbook(path).active
     assert "0 roles" in sheet["A2"].value
     assert sheet.cell(row=4, column=1).value == "#"
+
+
+# --- an empty scrape is a failed run, not a quiet day -----------------------
+
+def test_empty_scrape_raises_instead_of_writing(tmp_path, monkeypatch):
+    import exports.daily_sheet as ds
+
+    monkeypatch.setattr(ds, "ALLOW_EMPTY", False)
+    monkeypatch.setattr(ds, "collect_jobs", lambda **kwargs: [])
+
+    with pytest.raises(ds.EmptyScrapeError):
+        ds.build_daily_sheet(output_dir=str(tmp_path))
+
+
+def test_empty_scrape_does_not_clobber_an_existing_sheet(tmp_path, monkeypatch):
+    """
+    The regression that made this worth guarding: the Mac lost DNS at noon on
+    2026-08-08, every source failed, and a good sheet was replaced by a header
+    row. Yesterday's data is worth more than an empty file.
+    """
+    import exports.daily_sheet as ds
+
+    good = ds.write_sheet([_match(80)], str(tmp_path))
+    before = good.read_bytes()
+
+    monkeypatch.setattr(ds, "ALLOW_EMPTY", False)
+    monkeypatch.setattr(ds, "collect_jobs", lambda **kwargs: [])
+    with pytest.raises(ds.EmptyScrapeError):
+        ds.build_daily_sheet(output_dir=str(tmp_path))
+
+    assert good.read_bytes() == before
+
+
+def test_allow_empty_opts_back_into_writing(tmp_path, monkeypatch):
+    """A genuinely narrow search can still ask for the empty sheet."""
+    import exports.daily_sheet as ds
+
+    monkeypatch.setattr(ds, "ALLOW_EMPTY", True)
+    monkeypatch.setattr(ds, "collect_jobs", lambda **kwargs: [])
+
+    path = ds.build_daily_sheet(output_dir=str(tmp_path))
+    assert path.exists()
 
 
 # --- cross-encoder reranking ------------------------------------------------
