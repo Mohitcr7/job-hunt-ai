@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile all Python files
-        run: python -m compileall -q agents graph tools review api config.py main.py job_hunt_agent.py provision_bedrock.py
+        run: python -m compileall -q agents graph tools review api evals exports config.py main.py job_hunt_agent.py provision_bedrock.py
 
   tests:
     name: Smoke tests
@@ -30,6 +30,12 @@ jobs:
       # (lightweight, no torch) are enough to satisfy vector_store_tool's
       # module-level imports.
       - name: Install test dependencies
-        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core numpy faiss-cpu openpyxl
+        run: pip install pytest python-dotenv loguru pydantic fastapi httpx python-multipart langchain-core numpy faiss-cpu openpyxl pdfplumber
       - name: Run smoke tests
         run: python -m pytest tests/ -q
+
+      # Pure regex and JSON — no model, no network, no API key. Proves the
+      # fabrication detector still catches known fabrications and still clears
+      # known-honest text, which is what makes a green --live run mean anything.
+      - name: Fabrication detector self-test
+        run: python evals/fabrication_eval.py

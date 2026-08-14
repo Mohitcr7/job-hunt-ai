@@ -22,6 +22,42 @@ Built with **LangGraph**, **LangChain**, **FAISS**, **Scrapling**, and **FastAPI
 - **Web dashboard** — run the pipeline, browse matches with fit scores, read/copy your tailored materials, and move applications through the funnel.
 - **Automatic LLM fallback** — every agent calls one `get_llm()` factory. If your primary provider (Gemini/OpenAI/Bedrock) errors or hits a rate limit mid-run, the call transparently retries against a free OpenRouter model instead of failing the run.
 
+## 📊 Results
+
+Measured on a real run, not estimated. The matching numbers reproduce with `python evals/matching_eval.py`.
+
+**What the retrieval funnel saves.** The naive design LLM-scores every scraped job. A real scrape on 2026-08-08 returned 343 unique postings after deduplication:
+
+| | Fit-scoring calls | Total generation calls per run |
+|---|---|---|
+| LLM-score every scraped job | 343 | 367 |
+| FAISS prefilter → cross-encoder → LLM | **8** | **32** |
+| | **98% fewer** | **91% fewer** |
+
+The funnel is `343 → 45 (FAISS) → 8 (reranker) → 8 LLM calls`. Total generation calls are 8 fit scores + 8 tailoring + 16 review; the resume parse is cached after the first run and the reranker call is free. On a 986-job scrape the fit-scoring reduction is 99%.
+
+**Where the time actually goes** — same run, wall clock:
+
+| Stage | Time | Share |
+|---|---|---|
+| Scraping (LinkedIn + Indeed + Naukri) | 6m 41s | 94% |
+| Embed 343 jobs, rerank top 200, write sheet | 26s | 6% |
+| **Total** | **7m 07s** | |
+
+Worth being precise about: the scrapers dominate, and no amount of tuning the ranking stack changes that. The 2.5× concurrency win in [Performance](#-performance) applies to the LLM-bound stages of `run`, which is a different code path from the daily sheet.
+
+**Matching quality** — 47 hand-labelled job/resume pairs in [`evals/`](evals/), 23 real matches:
+
+| Stage | Precision | Recall | Average precision | Seniority traps caught |
+|---|---|---|---|---|
+| FAISS embeddings | 0.74 | 1.00 | 0.98 | 1/5 |
+| + cross-encoder | 0.82 | 0.78 | 0.93 | 3/5 |
+| + LLM fit scoring | 1.00 | 1.00 | 1.00 | **5/5** |
+
+The last column is the one that matters. A job demanding twelve years of experience reads as topically identical to one the candidate can do, so embeddings catch 1 of 5 — which is exactly why the LLM stage exists rather than being an expensive ornament.
+
+Two caveats, because these numbers flatter the system. The labels are mine rather than a panel's, and a perfect 1.00 means the eval set stopped discriminating at that stage, not that the matcher is perfect. The cross-encoder row scores each batch by percentile, which behaves differently on 47 rows than on the 200 it reranks in production. See [`evals/README.md`](evals/README.md) for the full list of limitations.
+
 ## 🖱️ Why it doesn't auto-submit applications
 
 Auto-filling forms on LinkedIn/Naukri/Indeed violates their Terms of Service and gets accounts banned — the worst possible outcome mid job-hunt. Recruiters also increasingly filter obviously-botted applications. This project's philosophy: **automate the research and writing (the slow part), keep the human on the final click (the risky part).**
@@ -32,7 +68,7 @@ Auto-filling forms on LinkedIn/Naukri/Indeed violates their Terms of Service and
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/<your-username>/job-hunt-ai.git
+git clone https://github.com/Mohitcr7/job-hunt-ai.git
 cd job-hunt-ai
 python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -134,6 +170,11 @@ job_hunt_ai/
 │   └── tracker.py           # SQLite application tracker
 ├── exports/
 │   └── daily_sheet.py       # dated .xlsx of everything scraped today
+├── evals/
+│   ├── data/                # 47 labelled job/resume pairs + 10 fabrication traps
+│   ├── matching_eval.py     # precision/recall/AP per matching stage
+│   └── fabrication_eval.py  # checks the tailor invents nothing
+├── tests/                   # 65 unit tests — matcher, parser, sheet, scraper
 ├── scripts/
 │   ├── daily_sheet.sh       # scheduled-run wrapper (env + logging)
 │   └── com.jobhuntai.dailysheet.plist.template   # launchd: noon daily
@@ -150,6 +191,8 @@ Designed to run on **free tiers**:
 - Embeddings are local ([all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)) — $0, private, offline.
 - LLM calls per run are capped: 1 resume parse (cached) + ~8 fit scores + ~8 tailoring calls + ~16 review calls. On Gemini Flash's free tier this costs **nothing**; on paid tiers it's pennies per run.
 - The reranker cut fit-scoring calls roughly in half — before it existed, all ~15 FAISS-shortlisted candidates went to the paid LLM step; now a free reranker pass narrows that to ~8 first.
+
+Measured call counts against the naive alternative are in [Results](#-results).
 
 ## ⚡ Performance
 
@@ -170,6 +213,20 @@ Two more changes are easy to lump in with "performance" but solve a different pr
 - **The OpenRouter/Nemotron fallback is about not failing, not about speed.** It only activates when your primary provider errors or rate-limits; on the happy path it adds zero overhead. It turns "the run crashes" into "the run finishes, a little slower."
 
 These numbers come from a live n=4 benchmark per stage on free-tier infrastructure — your actual latency will depend on provider, prompt size, and network conditions. If your provider's rate limits allow it, raising `LLM_CONCURRENCY` compounds these gains further.
+
+## 🧭 Design decisions
+
+**Two-stage retrieval before the LLM, not instead of it.** Embeddings are cheap and blind; the LLM is expensive and can read. Scoring 343 jobs with an LLM costs 343 calls to reject 335 of them, and scoring them with embeddings alone lets a role demanding twelve years through because it is topically identical to one that fits. So the cheap stage rejects in bulk and the expensive stage only ever sees eight candidates. The cost is a hard recall ceiling: anything FAISS buries, the LLM never sees, and no amount of LLM quality recovers it.
+
+**Local embeddings over an embeddings API.** `all-MiniLM-L6-v2` runs on the machine — free, offline, and your resume never leaves it for this step. A hosted embedding model would rank better. The trade was accepted because this stage runs over *every* scraped job, which is exactly where per-call pricing hurts most, and because the LLM stage downstream is there to catch what a small model misses.
+
+**A cross-encoder for ranking, an LLM for judgement.** Both could reorder the shortlist, but they fail differently, and this was measured rather than assumed: on a 650-job scrape with planted controls, the cross-encoder moved a perfect-match role from rank 16 to 8 while putting a chartered-accountancy job at 237/654 that FAISS had correctly buried at 652. It orders well and rejects badly. So it only ever reorders a pool FAISS has already cleaned, and it never decides what gets dropped.
+
+**No auto-submit, by policy not by omission.** Auto-filling applications on LinkedIn, Naukri or Indeed violates their terms and gets accounts banned — the worst possible outcome mid-hunt — and recruiters increasingly filter obviously-botted applications. The automation stops where the risk starts: research and writing are automated, the final click is not. This costs the headline feature everyone asks for first.
+
+**Guardrails as well as prompts, on the Bedrock path.** The tailor is prompt-constrained never to invent experience, and [`evals/fabrication_eval.py`](evals/fabrication_eval.py) checks that it holds against ten job descriptions designed to bait embellishment. But a prompt is a request, not an enforcement boundary — one bad generation puts a fabricated claim in a document a human sends to an employer. On Bedrock the same rule is also a platform Guardrail, which fails closed regardless of what the model produced. Belt and braces, because the failure mode is someone's reputation.
+
+**Fail soft everywhere except total failure.** A reranker error keeps the FAISS order, a failed fit-score keeps the embedding score, a rate-limited provider falls back to a free model, a dead scraper leaves the others running. The one deliberate exception is a scrape that returns nothing from every source: that fails loudly and writes no file, because it is almost always an outage, and overwriting a good spreadsheet with an empty one is worse than not running. Partial failure should degrade; total failure should stop.
 
 ## 🐳 Docker
 

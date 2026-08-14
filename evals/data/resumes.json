@@ -1,0 +1,25 @@
+{
+  "ml_early_career": {
+    "name": "Candidate A",
+    "summary": "AI/ML engineer with roughly 1 year of applied experience building LLM-backed applications. Comfortable across the model lifecycle: data preparation, fine-tuning small transformers, retrieval-augmented generation, and shipping inference behind a Python API. Strongest in Python, PyTorch and the LangChain ecosystem.",
+    "years_experience": 1,
+    "skills": [
+      "Python", "PyTorch", "scikit-learn", "pandas", "NumPy",
+      "LangChain", "LangGraph", "RAG", "FAISS", "vector databases",
+      "Hugging Face transformers", "prompt engineering", "fine-tuning",
+      "FastAPI", "Docker", "Git", "SQL", "PostgreSQL", "AWS", "MLflow"
+    ],
+    "raw_text": "AI/ML Engineer. Built a retrieval-augmented question answering system over internal documents using LangChain, FAISS and a local sentence-transformers embedding model, served through FastAPI in Docker. Fine-tuned a small transformer classifier for ticket routing and tracked experiments in MLflow. Wrote data pipelines in Python and pandas over PostgreSQL. Deployed inference containers to AWS. B.Tech in Computer Science."
+  },
+  "senior_backend": {
+    "name": "Candidate B",
+    "summary": "Backend engineer with 7 years building and operating distributed services in Java and Go. Owns systems end to end: API design, data modelling, deployment on Kubernetes, on-call and incident response. No machine learning background.",
+    "years_experience": 7,
+    "skills": [
+      "Java", "Spring Boot", "Go", "Kubernetes", "Docker", "Kafka",
+      "PostgreSQL", "Redis", "gRPC", "REST APIs", "microservices",
+      "Terraform", "AWS", "CI/CD", "distributed systems", "observability"
+    ],
+    "raw_text": "Senior Backend Engineer. Designed and operated payment microservices in Java and Spring Boot handling high request volume, with Kafka for asynchronous workflows and PostgreSQL plus Redis for storage and caching. Migrated services to Kubernetes and codified infrastructure in Terraform on AWS. Led on-call rotation and incident reviews. Built internal gRPC APIs consumed by several teams."
+  }
+}

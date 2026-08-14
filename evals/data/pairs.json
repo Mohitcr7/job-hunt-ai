@@ -1,0 +1,242 @@
+[
+  {
+    "id": "ml-01", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Machine Learning Engineer, LLM Applications", "company": "Northwind AI",
+    "jd": "Build and ship LLM-backed product features. You will design retrieval-augmented generation pipelines, evaluate prompt and model changes against offline benchmarks, and serve models behind Python APIs. We use Python, PyTorch, LangChain and a vector database for retrieval. Comfortable with Docker and cloud deployment. 0-3 years of applied experience; strong fundamentals matter more than years."
+  },
+  {
+    "id": "ml-02", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "AI Engineer (RAG Systems)", "company": "Clearpoint Labs",
+    "jd": "Own our document question-answering stack end to end. Chunking strategy, embedding model selection, vector index tuning, reranking and answer synthesis. Day to day is Python, FAISS or a hosted vector store, Hugging Face embeddings and FastAPI. You should be able to reason about retrieval quality with real metrics rather than vibes. Early career candidates welcome."
+  },
+  {
+    "id": "ml-03", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Machine Learning Engineer - NLP", "company": "Verbatim Systems",
+    "jd": "Join the NLP team building text classification and extraction models for customer communications. You will fine-tune transformer models, build evaluation sets, and move winning models into production inference services. Stack is Python, PyTorch, Hugging Face transformers, MLflow for tracking and Docker for packaging. 1-3 years experience."
+  },
+  {
+    "id": "ml-04", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Junior Data Scientist", "company": "Harborline Retail",
+    "jd": "Work with product and merchandising teams on demand forecasting and customer segmentation. Expect a lot of pandas, SQL against our PostgreSQL warehouse, and scikit-learn for modelling. You will present findings to non-technical stakeholders. We are looking for someone 0-2 years into their career with strong Python and a genuine curiosity about the data."
+  },
+  {
+    "id": "ml-05", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Applied Machine Learning Engineer", "company": "Tessellate",
+    "jd": "Applied ML role sitting between research and platform. Take promising model ideas, validate them on real data, and turn the ones that work into services other teams can call. Python and PyTorch daily, plus FastAPI, Docker and AWS for serving. We care about experiment hygiene and reproducibility. Suitable for engineers with one to four years of experience."
+  },
+  {
+    "id": "ml-06", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "AI/ML Engineer - Generative AI", "company": "Solvent Digital",
+    "jd": "Prototype and productionise generative AI features for enterprise clients. Prompt engineering, light fine-tuning of open models, retrieval pipelines and agent orchestration. We build in Python with LangChain and LangGraph, deploy on AWS in containers, and instrument everything. Comfortable moving fast on ambiguous problems. Entry to mid level."
+  },
+  {
+    "id": "ml-07", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "MLOps Engineer (Associate)", "company": "Grainstore Analytics",
+    "jd": "Help our data scientists ship. You will build training and deployment pipelines, wire up experiment tracking with MLflow, containerise inference services with Docker, and keep models monitored in production. Python is the primary language; some AWS and CI/CD exposure expected. This is a junior-friendly position with mentorship from senior platform engineers."
+  },
+  {
+    "id": "ml-08", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "NLP Engineer", "company": "Fieldnote Health",
+    "jd": "Build natural language processing for clinical documentation. Named entity recognition, summarisation and semantic search over medical text. You will fine-tune transformer models on domain data and build retrieval over a large document corpus. Python, PyTorch, Hugging Face and vector search. Two to four years of relevant experience preferred but strong portfolios considered."
+  },
+  {
+    "id": "ml-09", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Machine Learning Engineer, Recommendations", "company": "Loopcast Media",
+    "jd": "Improve what our listeners hear next. Candidate generation, embedding-based retrieval and ranking models, plus the offline evaluation harness that tells us whether a change is real. Python, PyTorch, and a feature store backed by PostgreSQL. You will work closely with backend engineers to serve models at low latency. 1-4 years."
+  },
+  {
+    "id": "ml-10", "resume": "ml_early_career", "label": "match", "category": "strong",
+    "title": "Associate AI Engineer", "company": "Bracken Software",
+    "jd": "Graduate-friendly AI engineering role. You will spend your first months building internal tools with LLMs, learning our Python codebase, and gradually taking ownership of a retrieval service. We look for solid programming fundamentals, curiosity about how models actually behave, and clear written communication. Familiarity with PyTorch or Hugging Face is a plus, not a requirement."
+  },
+
+  {
+    "id": "ml-11", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "Data Engineer (Python)", "company": "Ridgeway Freight",
+    "jd": "Build the pipelines that feed our analytics and ML workloads. Python and SQL heavy, orchestrating batch jobs over PostgreSQL and object storage, with an eye on data quality and schema evolution. You will partner with data scientists to productionise the datasets they prototype. Docker and AWS experience useful. 1-4 years of experience."
+  },
+  {
+    "id": "ml-12", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "Python Backend Engineer, ML Platform", "company": "Anvil Technologies",
+    "jd": "Backend engineering for the platform our ML teams build on. FastAPI services, job scheduling, model registry integration and the APIs that expose predictions to product teams. Mostly Python with PostgreSQL and Docker on AWS. You do not need to train models, but you should understand enough about them to design good interfaces. 1-4 years."
+  },
+  {
+    "id": "ml-13", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "Research Engineer, Small Language Models", "company": "Pelham Institute",
+    "jd": "Support a research group studying efficient language models. You will run fine-tuning experiments, build evaluation harnesses, and keep results reproducible. Python and PyTorch are essential; familiarity with Hugging Face training tooling helps. This is an engineering role in a research setting, so writing clear code matters more than publication record. Open to early career engineers."
+  },
+  {
+    "id": "ml-14", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "AI Solutions Engineer", "company": "Ferrous Cloud",
+    "jd": "Technical role working with customers deploying our AI platform. You will build proof-of-concept integrations in Python, debug retrieval and prompting problems in customer environments, and feed what you learn back to product. Requires real coding ability plus the patience to explain model behaviour to non-experts. Two years of relevant experience."
+  },
+  {
+    "id": "ml-15", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "Computer Vision Engineer", "company": "Halcyon Imaging",
+    "jd": "Develop image classification and segmentation models for industrial inspection. Python and PyTorch daily, with dataset curation, augmentation strategy and model evaluation. You will deploy trained models to inference services in Docker. Prior computer vision experience is welcome but strong general deep learning skills will be considered. 1-3 years."
+  },
+  {
+    "id": "ml-16", "resume": "ml_early_career", "label": "match", "category": "adjacent",
+    "title": "Machine Learning Engineer, Search Relevance", "company": "Cobalt Commerce",
+    "jd": "Own relevance for our product search. Embedding-based retrieval, learning to rank, and the offline evaluation that keeps us honest about improvements. You will work in Python with PyTorch and a vector index, and collaborate with backend engineers on serving. Interest in information retrieval matters more than years served. 1-4 years."
+  },
+
+  {
+    "id": "off-01", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Registered Nurse, Intensive Care", "company": "St Bede's Hospital",
+    "jd": "Provide direct nursing care to critically ill patients in our intensive care unit. Monitor vital signs, administer prescribed medication, operate ventilators and infusion pumps, and communicate with families. Requires a current nursing registration and at least two years of acute care experience. Rotating shifts including nights and weekends."
+  },
+  {
+    "id": "off-02", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Chartered Accountant - Statutory Audit", "company": "Ledger & Combe",
+    "jd": "Lead statutory audit engagements for mid-market clients. Plan audit scope, review working papers, assess internal controls and finalise financial statements under applicable accounting standards. Liaise with client finance teams and partners. Qualified chartered accountant with three to five years of post-qualification audit experience required."
+  },
+  {
+    "id": "off-03", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Executive Chef", "company": "The Copper Larder",
+    "jd": "Run the kitchen of a busy forty-cover restaurant. Design seasonal menus, manage food cost and supplier relationships, lead a brigade of eight, and maintain food hygiene standards. Requires formal culinary training and at least five years in a senior kitchen role. Evening and weekend work is the norm."
+  },
+  {
+    "id": "off-04", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Site Engineer, Civil Construction", "company": "Marchmont Infrastructure",
+    "jd": "Supervise civil works on a highway construction project. Set out works from drawings, monitor subcontractor progress and quality, maintain site records, and enforce health and safety procedures. Degree in civil engineering plus three years of site experience required. Position is site-based with accommodation provided."
+  },
+  {
+    "id": "off-05", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Sales Development Representative", "company": "Quillon Software",
+    "jd": "Generate qualified pipeline for our enterprise sales team. High volume outbound calling and email, qualifying inbound interest, booking discovery meetings and keeping the CRM accurate. We are looking for resilience, clear speaking voice and a competitive streak. No technical background required; full sales training provided."
+  },
+  {
+    "id": "off-06", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "HR Business Partner", "company": "Alderway Group",
+    "jd": "Partner with business leaders on organisational design, performance management, employee relations cases and workforce planning. You will coach managers through difficult conversations and ensure our policies are applied consistently. Requires five years of generalist HR experience and a strong grasp of employment law."
+  },
+  {
+    "id": "off-07", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Graphic Designer", "company": "Puddle Creative",
+    "jd": "Produce visual work across brand, campaign and packaging for our client roster. Comfortable in Adobe Illustrator, Photoshop and InDesign, with a portfolio showing typographic sensitivity and range. You will present concepts to clients and iterate on feedback. Three years of agency or in-house design experience."
+  },
+  {
+    "id": "off-08", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Mechanical Design Engineer", "company": "Thornbury Engineering",
+    "jd": "Design mechanical assemblies for industrial pumps. Produce 3D models and manufacturing drawings in SolidWorks, run tolerance stack-ups, specify materials and support prototype builds. Degree in mechanical engineering plus four years in a product design environment. Familiarity with GD&T is essential."
+  },
+  {
+    "id": "off-09", "resume": "ml_early_career", "label": "no_match", "category": "off_domain",
+    "title": "Legal Counsel, Commercial Contracts", "company": "Westmere Holdings",
+    "jd": "Draft, review and negotiate commercial agreements including supplier contracts, licensing and NDAs. Advise business teams on contractual risk and support dispute resolution. Qualified lawyer with five years post-qualification experience in commercial law, ideally with in-house exposure."
+  },
+
+  {
+    "id": "sen-01", "resume": "ml_early_career", "label": "no_match", "category": "seniority_mismatch",
+    "title": "Principal Machine Learning Engineer", "company": "Aurelian Systems",
+    "jd": "Set technical direction for machine learning across the company. You will own architecture decisions spanning several teams, mentor senior engineers, and be accountable for the reliability of models serving millions of requests. Requires a minimum of twelve years of engineering experience with at least six years leading machine learning systems at scale. Python and PyTorch expertise assumed."
+  },
+  {
+    "id": "sen-02", "resume": "ml_early_career", "label": "no_match", "category": "seniority_mismatch",
+    "title": "Head of Artificial Intelligence", "company": "Brantwood Financial",
+    "jd": "Lead our AI function of roughly thirty engineers and scientists. Own strategy, budget and hiring, represent AI capability to the executive committee, and set standards for responsible deployment. Fifteen or more years of experience required, including at least five years managing managers. Deep familiarity with modern deep learning is expected alongside the leadership record."
+  },
+  {
+    "id": "sen-03", "resume": "ml_early_career", "label": "no_match", "category": "seniority_mismatch",
+    "title": "Staff Research Scientist", "company": "Ostrander Research",
+    "jd": "Drive an independent research agenda in representation learning. PhD in machine learning or a closely related field is required, together with a minimum of eight years of post-doctoral research and a sustained publication record at top-tier venues. You will supervise junior researchers and set the direction of a research theme. Python and PyTorch fluency assumed."
+  },
+  {
+    "id": "sen-04", "resume": "ml_early_career", "label": "no_match", "category": "seniority_mismatch",
+    "title": "Senior MLOps Lead", "company": "Kestrel Logistics",
+    "jd": "Lead the ML platform team. You will define the deployment and monitoring standards every model follows, own the platform roadmap, and be on the hook for production incidents. Requires nine or more years in infrastructure or platform engineering, of which at least four must be running machine learning systems in production. Deep Kubernetes and Terraform expertise essential."
+  },
+  {
+    "id": "sen-05", "resume": "ml_early_career", "label": "no_match", "category": "seniority_mismatch",
+    "title": "Director of Data Science", "company": "Merrivale Insurance",
+    "jd": "Own the data science function across pricing, claims and fraud. Manage four team leads, set the analytical roadmap with the executive team, and be accountable for model governance and regulatory compliance. Twelve or more years of experience required with a minimum of six in people leadership. Technical credibility in statistical modelling is expected but this is a leadership post."
+  },
+
+  {
+    "id": "skl-01", "resume": "ml_early_career", "label": "no_match", "category": "skill_mismatch",
+    "title": "Machine Learning Engineer, GPU Kernels", "company": "Sablecore",
+    "jd": "Write and optimise CUDA kernels for our inference runtime. Profile GPU utilisation, implement fused operators in C++, and squeeze latency out of transformer attention paths. Requires expert level modern C++ and hands-on CUDA programming; Python appears only at the API boundary. Candidates without low-level performance engineering experience will not be a fit."
+  },
+  {
+    "id": "skl-02", "resume": "ml_early_career", "label": "no_match", "category": "skill_mismatch",
+    "title": "Machine Learning Engineer, Big Data", "company": "Tallow Data",
+    "jd": "Build large scale feature pipelines on our Spark platform. The work is Scala first, running distributed jobs over petabyte-scale datasets in a Hadoop ecosystem, with careful attention to shuffle behaviour and cluster cost. Requires production Scala and deep Spark internals knowledge. This is not a Python role and not a modelling role."
+  },
+  {
+    "id": "skl-03", "resume": "ml_early_career", "label": "no_match", "category": "skill_mismatch",
+    "title": "Robotics Machine Learning Engineer", "company": "Wren Robotics",
+    "jd": "Develop perception and control for autonomous ground robots. You will work in embedded C++ on ROS 2, integrate sensor drivers, and run models on constrained onboard hardware with hard real-time deadlines. Requires strong C++, ROS experience and comfort debugging on physical hardware in the workshop. Cloud and web experience is not relevant here."
+  },
+  {
+    "id": "skl-04", "resume": "ml_early_career", "label": "no_match", "category": "skill_mismatch",
+    "title": "Quantitative Researcher", "company": "Halden Capital",
+    "jd": "Research systematic trading signals in equity derivatives. You will work in C++ and kdb+/q against tick-level market data, build pricing and risk models, and defend your assumptions to a trading desk. Requires a strong background in stochastic calculus and options pricing plus production C++. Prior finance experience is essential."
+  },
+  {
+    "id": "skl-05", "resume": "ml_early_career", "label": "no_match", "category": "skill_mismatch",
+    "title": "ML Platform Engineer (Rust)", "company": "Ironvale",
+    "jd": "Build the control plane for our model serving platform. The codebase is Rust throughout, with custom Kubernetes operators, gRPC service meshes and a strong emphasis on memory safety and tail latency. Requires production Rust experience and deep Kubernetes internals knowledge. You will not be training models in this role."
+  },
+
+  {
+    "id": "be-01", "resume": "senior_backend", "label": "match", "category": "strong",
+    "title": "Senior Backend Engineer, Java", "company": "Falkirk Payments",
+    "jd": "Own core payment services written in Java and Spring Boot. You will design APIs consumed across the business, model transactional data in PostgreSQL, and use Kafka for asynchronous settlement flows. Services run on Kubernetes with Terraform-managed infrastructure on AWS. We expect five or more years of backend experience and comfort carrying a pager."
+  },
+  {
+    "id": "be-02", "resume": "senior_backend", "label": "match", "category": "strong",
+    "title": "Staff Software Engineer, Distributed Systems", "company": "Northgate Cloud",
+    "jd": "Work on the distributed coordination layer behind our platform. Consistency guarantees, partition tolerance, backpressure and graceful degradation are the daily subject matter. Primarily Go with some Java, deployed on Kubernetes. Requires seven or more years building systems that stay up, plus a track record of leading incident response and writing the follow-up honestly."
+  },
+  {
+    "id": "be-03", "resume": "senior_backend", "label": "match", "category": "strong",
+    "title": "Backend Engineer, Go", "company": "Rushmere Logistics",
+    "jd": "Build and operate the services that route our fleet. Go throughout, gRPC between services, PostgreSQL and Redis for state, Kafka for event streams. Everything runs on Kubernetes and is provisioned with Terraform. We are looking for engineers with five or more years who care about observability and can debug a production problem calmly."
+  },
+  {
+    "id": "be-04", "resume": "senior_backend", "label": "match", "category": "strong",
+    "title": "Platform Engineer", "company": "Bewick Systems",
+    "jd": "Own the infrastructure other engineers deploy onto. Terraform modules, Kubernetes cluster operations, CI/CD pipelines and the observability stack. Some Go for internal tooling. You will set standards rather than take tickets, and you will be part of the on-call rotation. Six or more years in infrastructure or backend engineering."
+  },
+  {
+    "id": "be-05", "resume": "senior_backend", "label": "match", "category": "strong",
+    "title": "Senior Engineer, Microservices", "company": "Calder Retail Group",
+    "jd": "Decompose our remaining monolith into services that teams can own independently. Java and Spring Boot, Kafka for integration, PostgreSQL per service, running on Kubernetes. The hard part is the migration strategy, not the code, so we want someone who has done this before. Six or more years of backend experience required."
+  },
+  {
+    "id": "be-06", "resume": "senior_backend", "label": "match", "category": "adjacent",
+    "title": "Site Reliability Engineer", "company": "Ellerby Digital",
+    "jd": "Keep our production systems healthy. Define service level objectives, build the alerting that matters, automate away recurring toil, and lead incident response. Comfortable in Go or Python, deeply familiar with Kubernetes and Linux internals, and able to read someone else's service and reason about failure modes. Five or more years."
+  },
+  {
+    "id": "be-07", "resume": "senior_backend", "label": "match", "category": "adjacent",
+    "title": "Cloud Infrastructure Engineer", "company": "Stanhope Media",
+    "jd": "Design and run our AWS estate. Networking, IAM, cost management and the Terraform that describes all of it. You will partner with backend teams on deployment patterns and be the escalation point for infrastructure incidents. Requires strong AWS depth, Terraform fluency and container orchestration experience. Five or more years."
+  },
+  {
+    "id": "be-08", "resume": "senior_backend", "label": "no_match", "category": "off_domain",
+    "title": "Paediatric Nurse", "company": "Ashcombe Children's Hospital",
+    "jd": "Deliver nursing care on a children's ward. Administer medication at paediatric dosages, support families through treatment, and work alongside consultants on care plans. Requires current nursing registration with a paediatric specialism and two years of ward experience. Shift work including nights."
+  },
+  {
+    "id": "be-09", "resume": "senior_backend", "label": "no_match", "category": "off_domain",
+    "title": "Marketing Content Manager", "company": "Lindley Brands",
+    "jd": "Own our content calendar across blog, email and social. Brief and edit freelance writers, track engagement metrics, and shape the brand voice. You will work closely with product marketing on launch narratives. Requires four years in content marketing and a portfolio of published work. No technical background needed."
+  },
+  {
+    "id": "be-10", "resume": "senior_backend", "label": "no_match", "category": "off_domain",
+    "title": "Interior Designer", "company": "Marlow & Vane",
+    "jd": "Design residential interiors from concept through installation. Space planning, material and finish selection, lighting schemes and supplier coordination. You will present schemes to private clients and manage their expectations through the build. Requires a design qualification and four years of residential project experience."
+  },
+  {
+    "id": "be-11", "resume": "senior_backend", "label": "no_match", "category": "skill_mismatch",
+    "title": "Senior Frontend Engineer", "company": "Kettleby Interactive",
+    "jd": "Own the user-facing application. React and TypeScript throughout, with a design system you will help maintain, plus real attention to accessibility, bundle size and rendering performance. You will work directly with designers on interaction detail. Requires five or more years of frontend engineering; this role does not touch backend services."
+  },
+  {
+    "id": "be-12", "resume": "senior_backend", "label": "no_match", "category": "skill_mismatch",
+    "title": "Senior iOS Engineer", "company": "Fernhill Apps",
+    "jd": "Build our iPhone application in Swift and SwiftUI. Offline-first data sync, push notifications, and the App Store release process are all yours. You will work with designers on native interaction patterns and profile the app for battery and memory. Requires five or more years of native iOS development. Server-side experience is not required."
+  }
+]
