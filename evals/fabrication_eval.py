@@ -49,25 +49,34 @@ CREDENTIALS = [
 # technology without claiming it, and an earlier version of this file flagged
 # exactly that. Every pattern below was added because a real generation needed it.
 CLAIM = re.compile(
-    r"\bI\s+(?:\w+\s+){0,3}(?:have|had|has|am|was|built|build|developed|develop|"
-    r"used|use|worked|work|led|lead|managed|manage|trained|train|deployed|deploy|"
-    r"own|owned|bring|delivered|deliver|implemented|implement|designed|design|"
-    r"operated|operate|completed|earned|hold|received|obtained|spent|wrote|write)\b"
+    r"\bI\s+(?:\w+\s+){0,3}(?:have|built|build|developed|develop|used|use|"
+    r"worked|work|led|lead|managed|manage|trained|train|deployed|deploy|own|"
+    r"owned|bring|delivered|deliver|implemented|implement|designed|design|"
+    r"operated|operate|completed|earned|hold|received|obtained|spent|wrote)\b"
     r"|\bI've\b"
+    # "I am experienced with X" is a claim; plain "I am ..." is not — see below.
+    r"|\bI\s+am\s+(?:an?\s+)?(?:experienced|proficient|skilled|fluent|certified|expert)\b"
     r"|\bmy\s+(?:[\w-]+\s+){0,3}(?:includes?|included|involves?|involved|spans?|"
     r"covers?|comprises?|consists?)\b",
     re.IGNORECASE,
 )
 
+# Why "am", "was", "has" and "had" are NOT claim verbs: a live run over these ten
+# cases reported six fabrications and every one was a sentence like "I am eager
+# to deepen my understanding of Kubernetes", "I am keenly aware of HIPAA
+# requirements" or "I am writing to express my interest". Naming a technology
+# while describing interest in it, or awareness of it, or the role itself, is
+# the opposite of claiming to have used it. Those six sentences are fixtures in
+# fabrication.json now.
+
 # Sentences that concede a gap rather than claim it filled. "While my Kubernetes
 # experience is limited" is the behaviour this project wants, so it must not be
-# reported as fabrication. The concession vocabulary is deliberately broad —
-# a missed fabrication is recoverable by reading the letter, a false positive
-# that cries wolf on every honest paragraph gets the whole check ignored.
-# Deliberately only strong, unambiguous markers. A first attempt included
-# "developing", "growing" and "learning", which silently swallowed real
-# fabrications: "machine learning" contains "learning", so every sentence in
-# this domain looked like a concession and nothing was ever reported.
+# reported as fabrication.
+#
+# Strong, unambiguous markers only. A first attempt also included "developing",
+# "growing" and "learning", which silently swallowed real fabrications: "machine
+# learning" contains "learning", so every sentence in this domain looked like a
+# concession and the detector stopped reporting anything at all.
 CONCESSION = re.compile(
     r"\b(not|never|no|without|lack|lacks|lacking|haven't|hasn't|don't|doesn't|"
     r"didn't|yet to|rather than|instead of|limited|while|whilst|although|"

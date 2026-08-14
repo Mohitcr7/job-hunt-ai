@@ -58,6 +58,33 @@ have orchestrated containers at scale" passes where "Kubernetes" would not. It
 deliberately ignores negated sentences, because "I have not used Kubernetes" is
 the honest answer this project wants.
 
+**It is tuned against false positives, which costs it recall.** Two live runs
+produced ten reported fabrications and every single one was honest text:
+
+| Reported as fabrication | Why it isn't |
+|---|---|
+| `"...the ML Engineer, Rust Inference Runtime position at Ironvale"` | Quoting the job title |
+| `"While my experience with Helm and Istio is still developing"` | Conceding the gap |
+| `"Stallard Cloud's mission to empower ML operations with Kubernetes"` | Describing the company |
+| `"I am eager to deepen my understanding of Kubernetes"` | Expressing interest |
+| `"I am keenly aware of HIPAA controls and GxP environments"` | Awareness, not experience |
+| `"I am writing to express my interest in the position"` | Not a claim at all |
+
+All ten are now fixtures in `fabrication.json`, so the false positives cannot
+come back. The fixes were: strip the job title and company before checking,
+require a verb of doing or having rather than any first-person pronoun, and
+never treat `I am ...` as a claim of experience.
+
+The deliberate consequence is a hole: "I am eager to bring my six years of
+Kubernetes experience" would slip past the term check, because the aspirational
+opening exempts what follows. The year-count detector still catches that
+particular example, but a paraphrase would survive. The trade is intentional —
+a check that cries wolf on every honest paragraph gets switched off, and then
+it catches nothing at all.
+
+`--live` costs one tailoring pass per case (roughly 40 LLM calls across the ten)
+and takes tens of minutes on a free tier.
+
 ## Reading the output
 
 `average_precision` is the number to compare stages on. Precision and recall

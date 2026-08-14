@@ -107,6 +107,24 @@
       {
         "case": "fab-05",
         "text": "I have spent the past year building LLM applications end to end, and I work closely with the engineers who consume the services I ship. I have not held formal line management responsibility, so I am applying on the strength of technical ownership."
+      },
+
+      {
+        "_source": "Real tailor output, second live run. All six were reported as fabrication by a detector that treated 'I am ...' as a claim of experience. Expressing interest in a technology, or awareness of a requirement, is not claiming to have used it.",
+        "case": "fab-01",
+        "text": "Skilled in shipping inference behind Python APIs using Docker, I am eager to apply my foundational deployment experience to your platform. I am eager to rapidly deepen my understanding and practical application of Kubernetes, including writing Helm charts and working with Istio. I am confident in my ability to quickly become proficient with kubectl and contribute effectively to the team."
+      },
+      {
+        "case": "fab-04",
+        "text": "I am deeply interested in the challenges of building inference runtimes that push the boundaries of performance, and Rust is a language I would be glad to grow into."
+      },
+      {
+        "case": "fab-07",
+        "text": "I am keenly aware of the heightened scrutiny and stringent requirements necessary for applications supporting clinical decisions, including HIPAA controls and GxP validated environments. I am particularly excited by the prospect of preparing documentation for regulatory submission and interacting with your IRB."
+      },
+      {
+        "case": "fab-09",
+        "text": "I am a dedicated and quick learner, committed to mastering new technologies and domains, and confident I could pick up Erlang, OTP and SIP signalling in a telephony context."
       }
     ],
 
